@@ -77,26 +77,30 @@ pipeline {
 
         stage('Update GitOps Repo') {
             steps {
-                    sh """
-                        export GIT_SSH_COMMAND="ssh -i /var/lib/jenkins/.ssh/id_rsa -o StrictHostKeyChecking=no"
-            
-                        rm -rf gitops
-                        git clone git@github.com:rakesh611/complete-prodcution-pipeline.git gitops
-                        cd gitops/apps
+                sh """
+                    # Use SSH for GitOps repo
+                    export GIT_SSH_COMMAND="ssh -i /var/lib/jenkins/.ssh/id_rsa -o StrictHostKeyChecking=no"
 
-                        sed -i "s|image: .*|image: ${IMAGE_NAME}:${IMAGE_TAG}|" deployment.yaml
-                        sed -i 's|type: ClusterIP|type: NodePort|' service.yaml
-                        sed -i '/nodePort:/d' service.yaml  # Remove existing nodePort if any
-                        sed -i '/ports:/a\    - nodePort: 30080' service.yaml
+                    rm -rf gitops
+                    git clone git@github.com:rakesh611/complete-prodcution-pipeline.git gitops
+                    cd gitops/apps
 
-                        git config user.email "jharakesh485@gmail.com"
-                        git config user.name "Rakesh Jha"
+                    # Update deployment image
+                    sed -i "s|image: .*|image: ${IMAGE_NAME}:${IMAGE_TAG}|" deployment.yaml
 
-                        git add deployment.yaml
-                        git commit -m "Update image to ${IMAGE_NAME}:${IMAGE_TAG}" || exit 0
-                        git push origin main
-                    """
-                }
+                    # Change service to NodePort and assign nodePort
+                    sed -i 's|type: ClusterIP|type: NodePort|' service.yaml
+                    sed -i '/nodePort:/d' service.yaml
+                    sed -i '/ports:/a\    - nodePort: 30080' service.yaml
+
+                    git config user.email "jharakesh485@gmail.com"
+                    git config user.name "Rakesh Jha"
+
+                    git add deployment.yaml service.yaml
+                    git commit -m "Update image to ${IMAGE_NAME}:${IMAGE_TAG} and expose via NodePort" || exit 0
+                    git push origin main
+                """
+            }
         }
 
         stage('Trivy Scan') {
