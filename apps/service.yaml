@@ -6,7 +6,9 @@ spec:
   selector:
     app: complete-production-pipeline
   ports:
-    - port: 80
-      targetPort: 8080
-  type: ClusterIP
+    - port: 80        # the port that the service exposes
+      targetPort: 8080  # the port on the Pod
+      nodePort: 30080   # optional, choose port in 30000-32767 range
+  type: NodePort
+
 
