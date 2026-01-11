@@ -92,7 +92,8 @@ pipeline {
                     git config user.name "Rakesh Jha"
 
                     git add deployment.yaml
-                    git commit -m "Update image to ${IMAGE_TAG}" || echo "No changes"
+                    git commit -m "Update image to ${IMAGE_NAME}:${IMAGE_TAG}" || exit 0
+                    git remote set-url origin https://${GIT_USER}:${GIT_TOKEN}@github.com/rakesh611/complete-prodcution-pipeline.git
                     git push origin main
                     """
                 }
