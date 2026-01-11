@@ -85,6 +85,9 @@ pipeline {
                         cd gitops/apps
 
                         sed -i "s|image: .*|image: ${IMAGE_NAME}:${IMAGE_TAG}|" deployment.yaml
+                        sed -i 's|type: ClusterIP|type: NodePort|' service.yaml
+                        sed -i '/nodePort:/d' service.yaml  # Remove existing nodePort if any
+                        sed -i '/ports:/a\    - nodePort: 30080' service.yaml
 
                         git config user.email "jharakesh485@gmail.com"
                         git config user.name "Rakesh Jha"
