@@ -25,7 +25,7 @@ pipeline {
 
         stage('Checkout from SCM') {
             steps {
-                // Regular HTTPS checkout for Jenkins workspace
+                // HTTPS checkout (works fine)
                 git branch: 'main',
                     credentialsId: 'github',
                     url: 'https://github.com/rakesh611/complete-prodcution-pipeline.git'
@@ -78,26 +78,28 @@ pipeline {
         stage('Update GitOps Repo') {
             steps {
                 sh """
-                    # Use SSH for GitOps repo
+                    set -e
+
                     export GIT_SSH_COMMAND="ssh -i /var/lib/jenkins/.ssh/id_rsa -o StrictHostKeyChecking=no"
 
                     rm -rf gitops
                     git clone git@github.com:rakesh611/complete-prodcution-pipeline.git gitops
                     cd gitops/apps
 
-                    # Update deployment image
+                    # Update image tag
                     sed -i "s|image: .*|image: ${IMAGE_NAME}:${IMAGE_TAG}|" deployment.yaml
 
-                    # Change service to NodePort and assign nodePort
+                    # Convert Service to NodePort
                     sed -i 's|type: ClusterIP|type: NodePort|' service.yaml
                     sed -i '/nodePort:/d' service.yaml
-                    sed -i '/ports:/a\    - nodePort: 30080' service.yaml
+                    sed -i '/ports:/a\\\\    nodePort: 30080' service.yaml
 
                     git config user.email "jharakesh485@gmail.com"
                     git config user.name "Rakesh Jha"
 
                     git add deployment.yaml service.yaml
-                    git commit -m "Update image to ${IMAGE_NAME}:${IMAGE_TAG} and expose via NodePort" || exit 0
+                    git commit -m "Update image to ${IMAGE_NAME}:${IMAGE_TAG}" || echo "No changes to commit"
+
                     git push origin main
                 """
             }
