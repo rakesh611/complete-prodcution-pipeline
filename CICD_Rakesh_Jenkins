@@ -77,8 +77,9 @@ pipeline {
 
         stage('Update GitOps Repo') {
             steps {
-                sshagent(['github-ssh']) { // Use your SSH credential ID here
                     sh """
+                        export GIT_SSH_COMMAND="ssh -i /var/lib/jenkins/.ssh/id_rsa -o StrictHostKeyChecking=no"
+            
                         rm -rf gitops
                         git clone git@github.com:rakesh611/complete-prodcution-pipeline.git gitops
                         cd gitops/apps
@@ -93,7 +94,6 @@ pipeline {
                         git push origin main
                     """
                 }
-            }
         }
 
         stage('Trivy Scan') {
