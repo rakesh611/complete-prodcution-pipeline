@@ -25,6 +25,7 @@ pipeline {
 
         stage('Checkout from SCM') {
             steps {
+                // Regular HTTPS checkout for Jenkins workspace
                 git branch: 'main',
                     credentialsId: 'github',
                     url: 'https://github.com/rakesh611/complete-prodcution-pipeline.git'
@@ -76,24 +77,21 @@ pipeline {
 
         stage('Update GitOps Repo') {
             steps {
-                // SSH key usage for Git push
-                sshagent(['github-ssh']) {
-                    sh '''
-                    set -e
+                sshagent(['github-ssh']) { // Use your SSH credential ID here
+                    sh """
+                        rm -rf gitops
+                        git clone git@github.com:rakesh611/complete-prodcution-pipeline.git gitops
+                        cd gitops/apps
 
-                    rm -rf gitops
-                    git clone git@github.com:rakesh611/complete-prodcution-pipeline.git gitops
-                    cd gitops/apps
+                        sed -i "s|image: .*|image: ${IMAGE_NAME}:${IMAGE_TAG}|" deployment.yaml
 
-                    sed -i "s|image: .*|image: ${IMAGE_NAME}:${IMAGE_TAG}|" deployment.yaml
+                        git config user.email "jharakesh485@gmail.com"
+                        git config user.name "Rakesh Jha"
 
-                    git config user.email "jharakesh485@gmail.com"
-                    git config user.name "Rakesh Jha"
-
-                    git add deployment.yaml
-                    git commit -m "Update image to ${IMAGE_NAME}:${IMAGE_TAG}" || echo "No changes to commit"
-                    git push origin main
-                    '''
+                        git add deployment.yaml
+                        git commit -m "Update image to ${IMAGE_NAME}:${IMAGE_TAG}" || exit 0
+                        git push origin main
+                    """
                 }
             }
         }
