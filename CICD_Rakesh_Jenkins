@@ -77,6 +77,24 @@ pipeline {
             }
         }
 
+        stage('Update GitOps Repo') {
+            steps {
+                script {
+                    sh """
+                    git clone https://github.com/rakesh611/complete-prodcution-pipeline.git
+                    cd complete-prodcution-pipeline/apps/
+
+                    sed -i 's|image: .*|image: ${IMAGE_NAME}:${IMAGE_TAG}|' deployment.yaml
+
+                    git add deployment.yaml
+                    git commit -m "Update image to ${IMAGE_TAG}"
+                    git push https://github.com/rakesh611/complete-production-pipeline.git main
+                    """
+                }
+           }
+       }   
+
+
         stage('Trivy Scan') {
             steps {
                 sh """

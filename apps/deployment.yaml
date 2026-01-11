@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: complete-production-pipeline
+  labels:
+    app: complete-production-pipeline
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: complete-production-pipeline
+  template:
+    metadata:
+      labels:
+        app: complete-production-pipeline
+    spec:
+      containers:
+        - name: app
+          image: rakesh6nm/complete-prodcution-pipeline:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: prod
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+
