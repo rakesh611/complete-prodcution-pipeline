@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: app
-          image: rakesh6nm/complete-prodcution-pipeline:1.0.0-59
+          image: rakesh6nm/adservice:11
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
